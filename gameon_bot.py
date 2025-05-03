@@ -7,22 +7,16 @@ bot = telebot.TeleBot(BOT_TOKEN, parse_mode="Markdown")
 
 ADMIN_USERNAME = "@KaliDapper"
 
-from telegram import ReplyKeyboardMarkup, KeyboardButton
-
-def show_main_menu(update, context):
-    keyboard = [
-        [KeyboardButton("💸 Deposit"), KeyboardButton("🏦 Withdraw")],
-        [KeyboardButton("📊 Balance"), KeyboardButton("🧾 How to Deposit")],
-        [KeyboardButton("🆘 Support")]
-    ]
-    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
-    update.message.reply_text("Please choose an option:", reply_markup=reply_markup)
-
+def show_main_menu(chat_id):
+    markup = ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.add(KeyboardButton("💸 Deposit"), KeyboardButton("🏦 Withdraw"))
+    markup.add(KeyboardButton("📊 Balance"), KeyboardButton("🧾 How to Deposit"))
+    markup.add(KeyboardButton("🆘 Support"))
+    
     bot.send_message(
         chat_id,
-        "🎰 Welcome to *GameOn!*\n\nChoose an option below to:\n• 💸 Make a Deposit\n• 💵 Request a Payout\n• 📊 Check Balance\n• 🧾 Learn How to Deposit\n• 🆘 Contact Support",
-        reply_markup=markup,
-        parse_mode="Markdown"
+        "🎰 Welcome to *GameOn!*\n\nChoose an option below to:\n• 💸 Make a Deposit\n• 🏦 Request a Payout\n• 📊 Check Balance\n• 🧾 Learn How to Deposit\n• 🆘 Contact Support",
+        reply_markup=markup
     )
 
 @bot.message_handler(commands=["start"])
@@ -32,30 +26,27 @@ def start(message):
 @bot.message_handler(func=lambda msg: msg.text and msg.text.lower() in ["💸 deposit", "deposit"])
 def deposit(message):
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add(
-        KeyboardButton("CashApp"),
-        KeyboardButton("Apple Pay"),
-        KeyboardButton("Venmo"),
-        KeyboardButton("Crypto")
-    )
-    bot.send_message(message.chat.id, "Choose your deposit method:", reply_markup=markup)
+    markup.add(KeyboardButton("CashApp"), KeyboardButton("Apple Pay"))
+    markup.add(KeyboardButton("Venmo"), KeyboardButton("Crypto"))
+    
+    bot.send_message(message.chat.id, "💳 Choose your deposit method:", reply_markup=markup)
 
-@bot.message_handler(func=lambda msg: msg.text and msg.text.lower() == "cashapp")
+@bot.message_handler(func=lambda msg: msg.text.lower() == "cashapp")
 def cashapp(message):
-    bot.send_message(message.chat.id, "💵 Send payment via *CashApp* to `$myposhsolutions` and reply with a screenshot.", parse_mode="Markdown")
-    bot.send_message(ADMIN_USERNAME, f"📨 {message.from_user.first_name} selected CashApp to deposit.")
+    bot.send_message(message.chat.id, "💵 Send payment via *CashApp* to `$myposhsolutions` and reply with a screenshot.")
+    bot.send_message(ADMIN_USERNAME, f"📨 {message.from_user.first_name} selected CashApp.")
 
-@bot.message_handler(func=lambda msg: msg.text and msg.text.lower() == "apple pay")
+@bot.message_handler(func=lambda msg: msg.text.lower() == "apple pay")
 def applepay(message):
-    bot.send_message(message.chat.id, "📱 Send payment via *Apple Pay* to `346-475-8302` and reply with a screenshot.", parse_mode="Markdown")
-    bot.send_message(ADMIN_USERNAME, f"📨 {message.from_user.first_name} selected Apple Pay to deposit.")
+    bot.send_message(message.chat.id, "📱 Send payment via *Apple Pay* to `346-475-8302` and reply with a screenshot.")
+    bot.send_message(ADMIN_USERNAME, f"📨 {message.from_user.first_name} selected Apple Pay.")
 
-@bot.message_handler(func=lambda msg: msg.text and msg.text.lower() == "venmo")
+@bot.message_handler(func=lambda msg: msg.text.lower() == "venmo")
 def venmo(message):
-    bot.send_message(message.chat.id, "💳 Send payment via *Venmo* to `@drellanno` and reply with a screenshot.", parse_mode="Markdown")
-    bot.send_message(ADMIN_USERNAME, f"📨 {message.from_user.first_name} selected Venmo to deposit.")
+    bot.send_message(message.chat.id, "💳 Send payment via *Venmo* to `@drellanno` and reply with a screenshot.")
+    bot.send_message(ADMIN_USERNAME, f"📨 {message.from_user.first_name} selected Venmo.")
 
-@bot.message_handler(func=lambda msg: msg.text and msg.text.lower() == "crypto")
+@bot.message_handler(func=lambda msg: msg.text.lower() == "crypto")
 def crypto(message):
     crypto_info = (
         "🪙 *Choose a crypto and send funds to the address below:*\n\n"
@@ -66,22 +57,23 @@ def crypto(message):
         "*XRP (BNB Beacon):* `bnb12awmj04d0csswhf5cyt66fzmwl4chfrrvhvhx2`\n\n"
         "📩 *Reply here with the transaction screenshot and crypto used.*"
     )
-    bot.send_message(message.chat.id, crypto_info, parse_mode="Markdown")
-    bot.send_message(ADMIN_USERNAME, f"📨 {message.from_user.first_name} selected Crypto to deposit.")
+    bot.send_message(message.chat.id, crypto_info)
+    bot.send_message(ADMIN_USERNAME, f"📨 {message.from_user.first_name} selected Crypto.")
 
-@bot.message_handler(func=lambda msg: msg.text and msg.text.lower() == "📊 balance")
+@bot.message_handler(func=lambda msg: msg.text.lower() in ["📊 balance", "balance"])
 def balance(message):
     bot.send_message(message.chat.id, "📊 Balance feature coming soon!")
 
-@bot.message_handler(func=lambda msg: msg.text and msg.text.lower() == "🧾 how to deposit")
+@bot.message_handler(func=lambda msg: msg.text.lower() in ["🧾 how to deposit", "how to deposit"])
 def how_to_deposit(message):
     bot.send_message(message.chat.id, "🧾 To deposit, select a method and send the payment. Then reply with your screenshot.")
 
-@bot.message_handler(func=lambda msg: msg.text and msg.text.lower() == "🆘 support")
+@bot.message_handler(func=lambda msg: msg.text.lower() in ["🆘 support", "support"])
 def support(message):
     bot.send_message(message.chat.id, f"📞 For support, contact {ADMIN_USERNAME}")
 
 bot.infinity_polling()
+
 
 
 
