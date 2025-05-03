@@ -7,17 +7,17 @@ bot = telebot.TeleBot(BOT_TOKEN, parse_mode="Markdown")
 
 ADMIN_USERNAME = "@KaliDapper"
 
-def show_main_menu(chat_id):
-    markup = ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add(
-        KeyboardButton("💸 Deposit"),
-        KeyboardButton("🏦 Withdraw")
-    )
-    markup.add(
-        KeyboardButton("📊 Balance"),
-        KeyboardButton("🧾 How to Deposit"),
-        KeyboardButton("🆘 Support")
-    )
+from telegram import ReplyKeyboardMarkup, KeyboardButton
+
+def show_main_menu(update, context):
+    keyboard = [
+        [KeyboardButton("💸 Deposit"), KeyboardButton("🏦 Withdraw")],
+        [KeyboardButton("📊 Balance"), KeyboardButton("🧾 How to Deposit")],
+        [KeyboardButton("🆘 Support")]
+    ]
+    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+    update.message.reply_text("Please choose an option:", reply_markup=reply_markup)
+
     bot.send_message(
         chat_id,
         "🎰 Welcome to *GameOn!*\n\nChoose an option below to:\n• 💸 Make a Deposit\n• 💵 Request a Payout\n• 📊 Check Balance\n• 🧾 Learn How to Deposit\n• 🆘 Contact Support",
