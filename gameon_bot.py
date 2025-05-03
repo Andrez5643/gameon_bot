@@ -20,33 +20,21 @@ def show_main_menu(chat_id):
     markup.add(
         KeyboardButton("🆘 Support")
     )
-    bot.send_message(
-        chat_id,
-       bot.send_message(chat_id, "🧿 Welcome to *GameOn*, where the odds work in your favor! 🏆", parse_mode="Markdown")
 
-
-"
-        "We're more than just a sportsbook — we're your personal line to big wins, fast payouts, and premium support. ✅
-
-"
-        "🏆 What to expect:
-"
-        "• 💵 Easy Deposits (CashApp, Venmo, Apple Pay, Crypto)
-"
-        "• 🏦 Fast Withdrawals — every Tuesday
-"
-        "• 🎁 Exclusive Bonuses & Free Plays
-"
-        "• 🧠 Real Humans, Real Help
-
-"
-        "Your next win starts here. If you ever need support, tap 🆘 or message @GameOnHost.
-
-"
-        "💬 Hit \"💸 Deposit\" to get started!",
-        reply_markup=markup,
-        parse_mode="Markdown"
+    welcome_message = (
+        "🧿 Welcome to *GameOn*, where the odds work in your favor! 🏆\n\n"
+        "We're more than just a sportsbook — we're your personal line to big wins, fast payouts, and premium support. ✅\n\n"
+        "🏆 What to expect:\n"
+        "• 💵 Easy Deposits (CashApp, Venmo, Apple Pay, Crypto)\n"
+        "• 🏦 Fast Withdrawals — every Tuesday\n"
+        "• 🎁 Exclusive Bonuses & Free Plays\n"
+        "• 🧠 Real Humans, Real Help\n\n"
+        "Your next win starts here. If you ever need support, tap 🆘 or message @GameOnHost.\n\n"
+        "💬 Hit \"💸 Deposit\" to get started!"
     )
+
+    bot.send_message(chat_id, welcome_message, reply_markup=markup, parse_mode="Markdown")
+
 
 @bot.message_handler(commands=["start"])
 def start(message):
