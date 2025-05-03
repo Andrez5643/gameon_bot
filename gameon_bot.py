@@ -22,7 +22,8 @@ def show_main_menu(chat_id):
     )
     bot.send_message(
         chat_id,
-        "🎰 Welcome to *GameOn*, where the odds work in your favor! 💸
+       bot.send_message(chat_id, "🧿 Welcome to *GameOn*, where the odds work in your favor! 🏆", parse_mode="Markdown")
+
 
 "
         "We're more than just a sportsbook — we're your personal line to big wins, fast payouts, and premium support. ✅
