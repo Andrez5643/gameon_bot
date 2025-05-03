@@ -43,18 +43,17 @@ def support(message):
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callback(call):
     instructions = {
-        "cashapp": "Send payment via CashApp to *$myposhsolutions* and reply here with a screenshot.",
-        "apple": "Send payment via Apple Pay to *346-475-8302* and reply here with a screenshot.",
-        "venmo": "Send payment via Venmo to *@drellanno* and reply here with a screenshot.",
-        "crypto": "Choose a crypto:"
-
-"crypto": "Choose a crypto:\n\n"
-          "*DOGE*: `D8FiDJhqr2LcxHtqroywc1Y5yrF6tMom98`\n"
-          "*SOL*: `2FnSCWLh5fVB4Fpjbi7TuaTPu9HtNZexiTu5SbDm6XTA`\n"
-          "*ETH*: `0x96fb9e62981040B7EC09813d15E8a624DBB51311`\n"
-          "*USDT (Avalanche)*: `0x96fb9e62981040B7EC09813d15E8a624DBB51311`\n"
-          "*XRP (BNB Beacon)*: `bnb12awmj04d0csswhf5cyt66fzmwl4chfrrvhvhx2`\n\n"
-          "Reply here with the transaction screenshot and crypto used."
+    "cashapp": "Send payment via CashApp to *$myposhsolutions* and reply here with a screenshot.",
+    "apple": "Send payment via Apple Pay to *346-475-8302* and reply here with a screenshot.",
+    "venmo": "Send payment via Venmo to *@drellanno* and reply here with a screenshot.",
+    "crypto": "Choose a crypto:\n\n"
+              "*DOGE*: `D8FiDJhqr2LcxHtqroywc1Y5yrF6tMom98`\n"
+              "*SOL*: `2FnSCWLh5fVB4Fpjbi7TuaTPu9HtNZexiTu5SbDm6XTA`\n"
+              "*ETH*: `0x96fb9e62981040B7EC09813d15E8a624DBB51311`\n"
+              "*USDT (Avalanche)*: `0x96fb9e62981040B7EC09813d15E8a624DBB51311`\n"
+              "*XRP (BNB Beacon)*: `bnb12awmj04d0csswhf5cyt66fzmwl4chfrrvhvhx2`\n\n"
+              "Reply here with the transaction screenshot and crypto used."
+}
 
     
 
