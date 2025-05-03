@@ -30,39 +30,39 @@ def show_main_menu(chat_id):
 def start(message):
     show_main_menu(message.chat.id)
 
-@bot.message_handler(func=lambda msg: msg.text == "💸 Deposit")
+@bot.message_handler(func=lambda msg: msg.text and msg.text.lower() in ["💸 deposit", "deposit"])
 def deposit(message):
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(KeyboardButton("CashApp"), KeyboardButton("Apple Pay"))
     markup.add(KeyboardButton("Venmo"), KeyboardButton("Crypto"))
     markup.add(KeyboardButton("⬅️ Back"))
-    bot.send_message(message.chat.id, "Select your deposit method:", reply_markup=markup)
+    bot.send_message(message.chat.id, "💳 Select your deposit method:", reply_markup=markup)
 
-@bot.message_handler(func=lambda msg: msg.text == "CashApp")
+@bot.message_handler(func=lambda msg: msg.text and msg.text.lower() == "cashapp")
 def cashapp(message):
     bot.send_message(message.chat.id, "💵 Send payment via *CashApp* to `$myposhsolutions` and reply with a screenshot.", parse_mode="Markdown")
     bot.send_message(ADMIN_USERNAME, f"📨 {message.from_user.first_name} selected CashApp to deposit.")
 
-@bot.message_handler(func=lambda msg: msg.text == "Apple Pay")
+@bot.message_handler(func=lambda msg: msg.text and msg.text.lower() == "apple pay")
 def applepay(message):
     bot.send_message(message.chat.id, "📱 Send payment via *Apple Pay* to `346-475-8302` and reply with a screenshot.", parse_mode="Markdown")
     bot.send_message(ADMIN_USERNAME, f"📨 {message.from_user.first_name} selected Apple Pay to deposit.")
 
-@bot.message_handler(func=lambda msg: msg.text == "Venmo")
+@bot.message_handler(func=lambda msg: msg.text and msg.text.lower() == "venmo")
 def venmo(message):
     bot.send_message(message.chat.id, "💳 Send payment via *Venmo* to `@drellanno` and reply with a screenshot.", parse_mode="Markdown")
     bot.send_message(ADMIN_USERNAME, f"📨 {message.from_user.first_name} selected Venmo to deposit.")
 
-@bot.message_handler(func=lambda msg: msg.text == "Crypto")
+@bot.message_handler(func=lambda msg: msg.text and msg.text.lower() == "crypto")
 def crypto(message):
     crypto_info = (
         "🪙 *Choose a crypto and send funds to the address below:*\n\n"
         "*DOGE:* `D8FiDJhqr2LcxHtqroywc1Y5yrF6tMom98`\n"
         "*SOL:* `2FnSCWLh5fVB4Fpjbi7TuaTPu9HtNZexiTu5SbDm6XTA`\n"
         "*ETH:* `0x96fb9e62981040B7EC09813d15E8a624DBB51311`\n"
-        "*USDT (Avalanche C):* `0x96fb9e62981040B7EC09813d15E8a624DBB51311`\n"
+        "*USDT (Avalanche):* `0x96fb9e62981040B7EC09813d15E8a624DBB51311`\n"
         "*XRP (BNB Beacon):* `bnb12awmj04d0csswhf5cyt66fzmwl4chfrrvhvhx2`\n\n"
-        "📩 *Reply here with the transaction screenshot and crypto used.*"
+        "📩 *Reply with your transaction screenshot.*"
     )
     bot.send_message(message.chat.id, crypto_info, parse_mode="Markdown")
     bot.send_message(ADMIN_USERNAME, f"📨 {message.from_user.first_name} selected Crypto to deposit.")
