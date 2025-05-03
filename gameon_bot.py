@@ -18,7 +18,13 @@ def show_main_menu(chat_id):
         KeyboardButton("📥 How to Deposit"),
         KeyboardButton("🧑‍💻 Support")
     )
- bot.send_message(chat_id, "👋 Welcome to GameOn!\nUse the menu below to get started:", reply_markup=markup)
+bot.send_message(
+    chat_id,
+    "🎰 Welcome to *GameOn!*\n\nChoose an option below to:\n• 💸 Make a Deposit\n• 💵 Request a Payout\n• 📊 Check Balance\n• 🧾 Learn How to Deposit\n• 🆘 Contact Support",
+    reply_markup=markup,
+    parse_mode="Markdown"
+)
+
 
 
 @bot.message_handler(commands=["start"])
