@@ -79,9 +79,17 @@ def balance(message):
 def how_to_deposit(message):
     bot.send_message(message.chat.id, "🧾 Steps to deposit:\n\n1. Tap 💸 Deposit\n2. Select your payment method\n3. Send payment\n4. Reply with a screenshot")
 
-@bot.message_handler(func=lambda msg: msg.text == "🆘 Support")
+@bot.message_handler(func=lambda msg: msg.text and msg.text.lower() in ["🆘 support", "support"])
 def support(message):
-    bot.send_message(message.chat.id, f"📞 For help, message {ADMIN_USERNAME}")
+    bot.send_message(
+        message.chat.id,
+        "🆘 A support agent will be with you shortly.\n\nFor faster service, please describe your issue. An admin will review your message and respond as soon as possible."
+    )
+    bot.send_message(
+        ADMIN_USERNAME,
+        f"📥 Support request from {message.from_user.first_name} (@{message.from_user.username or 'no username'}).\n\nThey tapped the Support button."
+    )
+
 
 @bot.message_handler(func=lambda msg: msg.text == "⬅️ Back")
 def back(message):
