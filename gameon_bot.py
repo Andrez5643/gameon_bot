@@ -27,10 +27,28 @@ def show_main_menu(chat_id):
     )
 
 @bot.message_handler(commands=["start"])
+@bot.message_handler(commands=["start"])
 def start(message):
-    show_main_menu(message.chat.id)
+    chat_id = message.chat.id
+    markup = ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.add(
+        KeyboardButton("💸 Deposit"),
+        KeyboardButton("🏦 Withdraw")
+    )
+    markup.add(
+        KeyboardButton("📊 Balance"),
+        KeyboardButton("🧾 How to Deposit")
+    )
+    markup.add(
+        KeyboardButton("🆘 Support")
+    )
+    bot.send_message(
+        chat_id,
+        "🎰 *Welcome to GameOn!*\n\nChoose an option below to:\n• 💸 Make a Deposit\n• 💵 Request a Payout\n• 📊 Check Balance\n• 🧾 Learn How to Deposit\n• 🆘 Contact Support",
+        reply_markup=markup,
+        parse_mode="Markdown"
+    )
 
-@bot.message_handler(func=lambda msg: msg.text and msg.text.lower() in ["\ud83d\udcb8 deposit", "deposit"])
 def deposit(message):
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(
