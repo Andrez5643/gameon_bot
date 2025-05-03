@@ -67,9 +67,17 @@ def crypto(message):
     bot.send_message(message.chat.id, crypto_info, parse_mode="Markdown")
     bot.send_message(ADMIN_USERNAME, f"📨 {message.from_user.first_name} selected Crypto to deposit.")
 
-@bot.message_handler(func=lambda msg: msg.text == "🏦 Withdraw")
+from datetime import datetime
+
+@bot.message_handler(func=lambda msg: msg.text and msg.text.lower() in ["🏦 withdraw", "withdraw", "cashout"])
 def withdraw(message):
-    bot.send_message(message.chat.id, f"🏦 To request a payout, please message {ADMIN_USERNAME} directly.")
+    today = datetime.now().strftime("%A")  # Gets day name like 'Tuesday'
+
+    if today == "Tuesday":
+        bot.send_message(message.chat.id, f"✅ It’s Tuesday — payout requests are open!\n\nPlease message {ADMIN_USERNAME} to begin your cashout.")
+    else:
+        bot.send_message(message.chat.id, "⛔️ Payouts are only processed on *Tuesdays*.\n\nPlease come back then to request your withdrawal.", parse_mode="Markdown")
+
 
 @bot.message_handler(func=lambda msg: msg.text == "📊 Balance")
 def balance(message):
