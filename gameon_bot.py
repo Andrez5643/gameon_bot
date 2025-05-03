@@ -22,8 +22,29 @@ def show_main_menu(chat_id):
     )
     bot.send_message(
         chat_id,
-        "🎰 *Welcome to GameOn!*\n\nChoose an option below to:\n• 💸 Make a Deposit\n• 💵 Request a Payout\n• 📊 Check Balance\n• 🧾 Learn How to Deposit\n• 🆘 Contact Support",
-        reply_markup=markup
+        "🎰 Welcome to *GameOn*, where the odds work in your favor! 💸
+
+"
+        "We're more than just a sportsbook — we're your personal line to big wins, fast payouts, and premium support. ✅
+
+"
+        "🏆 What to expect:
+"
+        "• 💵 Easy Deposits (CashApp, Venmo, Apple Pay, Crypto)
+"
+        "• 🏦 Fast Withdrawals — every Tuesday
+"
+        "• 🎁 Exclusive Bonuses & Free Plays
+"
+        "• 🧠 Real Humans, Real Help
+
+"
+        "Your next win starts here. If you ever need support, tap 🆘 or message @GameOnHost.
+
+"
+        "💬 Hit \"💸 Deposit\" to get started!",
+        reply_markup=markup,
+        parse_mode="Markdown"
     )
 
 @bot.message_handler(commands=["start"])
@@ -88,6 +109,7 @@ def back(message):
     show_main_menu(message.chat.id)
 
 bot.infinity_polling()
+
 
 
 
