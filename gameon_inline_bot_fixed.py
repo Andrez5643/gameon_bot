@@ -10,13 +10,13 @@ ADMIN_USERNAME = "@GameOnHost"
 
 bot = telebot.TeleBot(BOT_TOKEN, parse_mode="Markdown")
 
-# Setup Google Sheets
+# Google Sheets setup
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 creds = ServiceAccountCredentials.from_json_keyfile_name("/app/credentials.json", scope)
 client = gspread.authorize(creds)
 SHEET_NAME = "Game On Player Ledger"
 
-# Log to sheet
+# Log to Google Sheet
 def log_transaction_to_sheet(telegram_handle, first_name, sportsbook_username, password, action, amount, method, status):
     try:
         sheet = client.open(SHEET_NAME).sheet1
@@ -27,13 +27,12 @@ def log_transaction_to_sheet(telegram_handle, first_name, sportsbook_username, p
     except Exception as e:
         print("❌ Failed to log to sheet:", e)
 
-# Main menu with inline buttons
+# Show inline menu
 def show_inline_main_menu(chat_id):
     markup = InlineKeyboardMarkup(row_width=2)
     markup.add(
         InlineKeyboardButton("💰 Deposit", callback_data="deposit"),
         InlineKeyboardButton("🏦 Withdraw", callback_data="withdraw"),
-        InlineKeyboardButton("📊 Balance", callback_data="balance"),
         InlineKeyboardButton("🧾 How to Deposit", callback_data="how_to_deposit"),
         InlineKeyboardButton("☎️ Support", callback_data="support")
     )
@@ -59,22 +58,26 @@ deposit_context = {}
 withdraw_context = {}
 withdraw_payment_info = {}
 
-# Inline button callback handler
+# Handle button actions
 @bot.callback_query_handler(func=lambda call: True)
 def handle_query(call):
     chat_id = call.message.chat.id
     first_name = call.from_user.first_name
+    now = datetime.now()
 
     if call.data == "deposit":
         deposit_context[chat_id] = True
         bot.send_message(chat_id, f"Hi {first_name}, how much would you like to deposit?", reply_markup=ForceReply())
 
     elif call.data == "withdraw":
-        withdraw_context[chat_id] = True
-        bot.send_message(chat_id, f"Hi {first_name}, how much would you like to withdraw?", reply_markup=ForceReply())
-
-    elif call.data == "balance":
-        bot.send_message(chat_id, "📊 To check your balance, message @GameOnHost or wait for it to be updated here.")
+        if now.weekday() == 1 and now.hour < 10:  # Tuesday before 10 AM
+            withdraw_context[chat_id] = True
+            bot.send_message(chat_id, f"Hi {first_name}, how much would you like to withdraw?", reply_markup=ForceReply())
+        else:
+            bot.send_message(chat_id,
+                "📅 Withdrawals are processed every *Tuesday before 10:00 AM*. Please come back then to request your payout!",
+                parse_mode="Markdown"
+            )
 
     elif call.data == "how_to_deposit":
         bot.send_message(chat_id,
@@ -88,7 +91,7 @@ def handle_query(call):
     elif call.data == "support":
         bot.send_message(chat_id, "☎️ For help, message @GameOnHost or tag support here and we'll assist you ASAP.")
 
-# Deposit amount handler
+# Handle deposit amount
 @bot.message_handler(func=lambda message: deposit_context.get(message.chat.id))
 def handle_deposit_amount(message):
     chat_id = message.chat.id
@@ -127,7 +130,7 @@ def handle_deposit_amount(message):
     except ValueError:
         bot.send_message(chat_id, "⚠️ Please enter a valid number for the deposit amount (e.g., 50 or 100).")
 
-# Withdraw amount handler
+# Handle withdraw amount
 @bot.message_handler(func=lambda message: withdraw_context.get(message.chat.id))
 def handle_withdraw_amount(message):
     chat_id = message.chat.id
@@ -146,6 +149,7 @@ def handle_withdraw_amount(message):
     except ValueError:
         bot.send_message(chat_id, "⚠️ Please enter a valid number for the withdrawal amount.")
 
+# Handle withdraw payout info
 @bot.message_handler(func=lambda message: withdraw_payment_info.get(message.chat.id) is not None)
 def handle_withdraw_payout_info(message):
     chat_id = message.chat.id
@@ -170,4 +174,5 @@ def handle_withdraw_payout_info(message):
         status="Pending"
     )
 
+# Start polling
 bot.infinity_polling()
