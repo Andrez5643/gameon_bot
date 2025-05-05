@@ -70,13 +70,12 @@ def handle_query(call):
         bot.send_message(chat_id, f"Hi {first_name}, how much would you like to deposit?", reply_markup=ForceReply())
 
     elif call.data == "withdraw":
-        # Only allow withdrawals on Tuesdays after 10:00 AM
         if now.weekday() == 1 and now.hour >= 10:
             withdraw_context[chat_id] = True
             bot.send_message(chat_id, f"Hi {first_name}, how much would you like to withdraw?", reply_markup=ForceReply())
         else:
             bot.send_message(chat_id,
-                "📅 Withdrawals are processed every *Tuesday after 10:00 AM*. Please come back then to request your payout!",
+                "📅 Withdrawals are *only accepted on Tuesdays after 10:00 AM*. Please do not request a payout before then.",
                 parse_mode="Markdown"
             )
 
@@ -175,5 +174,60 @@ def handle_withdraw_payout_info(message):
         status="Pending"
     )
 
-# Start polling
+# Admin: create private group (must reply to user)
+@bot.message_handler(commands=["create_group"])
+def create_group(message):
+    if message.from_user.username != ADMIN_USERNAME.strip("@"):
+        bot.reply_to(message, "❌ You are not authorized to use this command.")
+        return
+
+    try:
+        parts = message.text.strip().split()
+        if len(parts) != 2:
+            bot.reply_to(message, "⚠️ Usage: /create_group [SportsbookUsername]")
+            return
+
+        sportsbook_username = parts[1]
+
+        if not message.reply_to_message:
+            bot.reply_to(message, "⚠️ Please reply to the user's message when using this command.")
+            return
+
+        user = message.reply_to_message.from_user
+        telegram_handle = f"@{user.username or 'N/A'}"
+        first_name = user.first_name
+        group_title = f"Game On | {sportsbook_username}"
+
+        # Log group creation
+        log_transaction_to_sheet(
+            telegram_handle=telegram_handle,
+            first_name=first_name,
+            sportsbook_username=sportsbook_username,
+            password="Assigned by VA",
+            action="Account Created",
+            amount="N/A",
+            method="N/A",
+            status="Created"
+        )
+
+        template = (
+            f"✅ Group setup for: *{group_title}*\n\n"
+            f"📌 Group Setup Template:\n"
+            f"Group Name: *{group_title}*\n"
+            f"Add Members: Player, @GameOnSupport, Bot\n\n"
+            f"📌 Pinned Message:\n"
+            "🏆 Welcome to your private Game On betting room!\n\n"
+            "This group is just for you — no distractions, no spam.\n"
+            "💸 Deposit with the bot\n"
+            "🧾 How to Deposit anytime\n"
+            "🆘 Get help when needed\n\n"
+            "📌 Let us know when you're ready to deposit!"
+        )
+
+        bot.reply_to(message, template, parse_mode="Markdown")
+
+    except Exception as e:
+        bot.reply_to(message, f"⚠️ Failed to create group: {str(e)}")
+
+# Start bot
 bot.infinity_polling()
