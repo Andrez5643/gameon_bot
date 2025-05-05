@@ -1,4 +1,3 @@
-
 import os
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ForceReply
@@ -39,15 +38,17 @@ def show_inline_main_menu(chat_id):
         InlineKeyboardButton("☎️ Support", callback_data="support")
     )
 
-welcome_message = (
-    "🧿 *Welcome to GameOn*, where the odds work in your favor! 🏆\\n\\n"
-    "🏆 What to expect:\\n"
-    "• 💵 Easy Deposits (CashApp, Venmo, Apple Pay, Crypto)\\n"
-    "• 🏦 Fast Withdrawals — every Tuesday\\n"
-    "• 🎁 Exclusive Bonuses & Free Plays\\n"
-    "• 🧠 Real Humans, Real Help\\n\\n"
-    "Your next win starts here. Choose an option below to begin!"
-)
+    welcome_message = (
+        "🧿 *Welcome to GameOn*, where the odds work in your favor! 🏆\n\n"
+        "🏆 What to expect:\n"
+        "• 💵 Easy Deposits (CashApp, Venmo, Apple Pay, Crypto)\n"
+        "• 🏦 Fast Withdrawals — every Tuesday\n"
+        "• 🎁 Exclusive Bonuses & Free Plays\n"
+        "• 🧠 Real Humans, Real Help\n\n"
+        "Your next win starts here. Choose an option below to begin!"
+    )
+
+    bot.send_message(chat_id, welcome_message, reply_markup=markup)
 
 @bot.message_handler(commands=["start"])
 def start(message):
@@ -77,13 +78,10 @@ def handle_query(call):
 
     elif call.data == "how_to_deposit":
         bot.send_message(chat_id,
-            "1. Choose a deposit method
-"
-            "2. Send funds to the provided address
-"
-            "3. Upload a screenshot here
-"
-            "4. We’ll credit your account ASAP ✅",
+            """1. Choose a deposit method  
+2. Send funds to the provided address  
+3. Upload a screenshot here  
+4. We’ll credit your account ASAP ✅""",
             parse_mode="Markdown"
         )
 
@@ -101,28 +99,16 @@ def handle_deposit_amount(message):
         deposit_context.pop(chat_id, None)
 
         deposit_msg = (
-            f"💵 Great, {first_name}! Here's how to deposit your *${amount:.2f}*:
-
-"
-            f"• CashApp: `$myposhsolutions`
-"
-            f"• Venmo: `@drellanno`
-"
-            f"• Apple Pay: `346-475-8302`
-"
-            f"• Crypto Options:
-"
-            f"   - Dogecoin: `D8FiDJhqr2LcxHtqroywc1Y5yrF6tMom98`
-"
-            f"   - Solana: `2FnSCWLh5fVB4Fpjbi7TuaTPu9HtNZexiTu5SbDm6XTA`
-"
-            f"   - USDT (AVAX): `0x96fb9e62981040B7EC09813d15E8a624DBB51311`
-"
-            f"   - Ethereum: `0x96fb9e62981040B7EC09813d15E8a624DBB51311`
-"
-            f"   - XRP (BNB Beacon): `bnb12awmj04d0csswhf5cyt66fzmwl4chfrrvhvhx2`
-
-"
+            f"💵 Great, {first_name}! Here's how to deposit your *${amount:.2f}*:\n\n"
+            f"• CashApp: `$myposhsolutions`\n"
+            f"• Venmo: `@drellanno`\n"
+            f"• Apple Pay: `346-475-8302`\n"
+            f"• Crypto Options:\n"
+            f"   - Dogecoin: `D8FiDJhqr2LcxHtqroywc1Y5yrF6tMom98`\n"
+            f"   - Solana: `2FnSCWLh5fVB4Fpjbi7TuaTPu9HtNZexiTu5SbDm6XTA`\n"
+            f"   - USDT (AVAX): `0x96fb9e62981040B7EC09813d15E8a624DBB51311`\n"
+            f"   - Ethereum: `0x96fb9e62981040B7EC09813d15E8a624DBB51311`\n"
+            f"   - XRP (BNB Beacon): `bnb12awmj04d0csswhf5cyt66fzmwl4chfrrvhvhx2`\n\n"
             "✅ After you send the payment, reply here with a screenshot so we can credit your account ASAP."
         )
         bot.send_message(chat_id, deposit_msg, parse_mode="Markdown")
@@ -153,9 +139,7 @@ def handle_withdraw_amount(message):
         withdraw_payment_info[chat_id] = amount
 
         bot.send_message(chat_id,
-            f"✅ Got it, {first_name}. You've requested to withdraw *${amount:.2f}*.
-
-"
+            f"✅ Got it, {first_name}. You've requested to withdraw *${amount:.2f}*.\n\n"
             "Please reply with your payout info (Cash App tag, Venmo username, Apple Pay number, etc.).",
             parse_mode="Markdown"
         )
@@ -170,10 +154,7 @@ def handle_withdraw_payout_info(message):
     payout_info = message.text.strip()
 
     bot.send_message(chat_id,
-        f"📝 Thanks {first_name}, we've received your request to withdraw *${amount:.2f}* to:
-`{payout_info}`
-
-"
+        f"📝 Thanks {first_name}, we've received your request to withdraw *${amount:.2f}* to:\n`{payout_info}`\n\n"
         "📌 Payouts are processed every *Tuesday*. We’ll notify you once it’s sent.",
         parse_mode="Markdown"
     )
