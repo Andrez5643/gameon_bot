@@ -12,7 +12,8 @@ bot = telebot.TeleBot(BOT_TOKEN, parse_mode="Markdown")
 
 # Setup Google Sheets
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
+creds_path = os.path.join(os.path.dirname(__file__), "credentials.json")
+creds = ServiceAccountCredentials.from_json_keyfile_name(creds_path, scope)
 client = gspread.authorize(creds)
 SHEET_NAME = "Game On Player Ledger"
 
