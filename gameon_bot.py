@@ -1,26 +1,18 @@
 import os
 import telebot
-from telebot.types import ReplyKeyboardMarkup, KeyboardButton
+from telebot.types import ReplyKeyboardMarkup, KeyboardButton, ForceReply
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 ADMIN_USERNAME = "@GameOnHost"
 
 bot = telebot.TeleBot(BOT_TOKEN, parse_mode="Markdown")
 
+# Show main menu
 def show_main_menu(chat_id):
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add(
-        KeyboardButton("💸 Deposit"),
-        KeyboardButton("🏦 Withdraw")
-    )
-    markup.add(
-        KeyboardButton("📊 Balance"),
-        KeyboardButton("🧾 How to Deposit")
-    )
-    markup.add(
-        KeyboardButton("🆘 Support")
-    )
-
+    markup.add(KeyboardButton("💸 Deposit"), KeyboardButton("🏦 Withdraw"))
+    markup.add(KeyboardButton("📊 Balance"), KeyboardButton("🧾 How to Deposit"))
+    markup.add(KeyboardButton("🆘 Support"))
     welcome_message = (
         "🧿 Welcome to *GameOn*, where the odds work in your favor! 🏆\n\n"
         "We're more than just a sportsbook — we're your personal line to big wins, fast payouts, and premium support. ✅\n\n"
@@ -32,39 +24,47 @@ def show_main_menu(chat_id):
         "Your next win starts here. If you ever need support, tap 🆘 or message @GameOnHost.\n\n"
         "💬 Hit \"💸 Deposit\" to get started!"
     )
-
-    bot.send_message(chat_id, welcome_message, reply_markup=markup, parse_mode="Markdown")
+    bot.send_message(chat_id, welcome_message, reply_markup=markup)
 
 @bot.message_handler(commands=["start"])
 def start(message):
     show_main_menu(message.chat.id)
+# Track users in the deposit flow
+deposit_context = {}
 
-@bot.message_handler(func=lambda msg: msg.text == "_
-@bot.message_handler(func=lambda msg: msg.text in ["CashApp", "Apple Pay", "Venmo", "Crypto"])
-def handle_deposit_method(message):
-    methods = {
-        "CashApp": "$myposhsolutions",
-        "Apple Pay": "346-475-8302",
-        "Venmo": "@drellanno",
-        "Crypto": (
-            "🪙 *Crypto Deposit Addresses:*\n"
-            "• Dogecoin: `D8FiDJhqr2LcxHtqroywc1Y5yrF6tMom98`\n"
-            "• Solana: `2FnSCWLh5fVB4Fpjbi7TuaTPu9HtNZexiTu5SbDm6XTA`\n"
-            "• USDT (AVAX): `0x96fb9e62981040B7EC09813d15E8a624DBB51311`\n"
-            "• Ethereum: `0x96fb9e62981040B7EC09813d15E8a624DBB51311`\n"
-            "• XRP (BNB Beacon): `bnb12awmj04d0csswhf5cyt66fzmwl4chfrrvhvhx2`"
+@bot.message_handler(func=lambda msg: msg.text == "💸 Deposit")
+def start_deposit(message):
+    first_name = message.from_user.first_name
+    chat_id = message.chat.id
+    deposit_context[chat_id] = True
+    bot.send_message(chat_id, f"Hi {first_name}, how much would you like to deposit?", reply_markup=ForceReply())
+
+@bot.message_handler(func=lambda message: deposit_context.get(message.chat.id))
+def handle_deposit_amount(message):
+    chat_id = message.chat.id
+    first_name = message.from_user.first_name
+
+    try:
+        amount = float(message.text.strip().replace("$", ""))
+        deposit_context.pop(chat_id, None)
+
+        deposit_msg = (
+            f"💵 Great, {first_name}! Here's how to deposit your *${amount:.2f}*:\n\n"
+            f"• CashApp: `$myposhsolutions`\n"
+            f"• Venmo: `@drellanno`\n"
+            f"• Apple Pay: `346-475-8302`\n"
+            f"• Crypto Options:\n"
+            f"   - Dogecoin: `D8FiDJhqr2LcxHtqroywc1Y5yrF6tMom98`\n"
+            f"   - Solana: `2FnSCWLh5fVB4Fpjbi7TuaTPu9HtNZexiTu5SbDm6XTA`\n"
+            f"   - USDT (AVAX): `0x96fb9e62981040B7EC09813d15E8a624DBB51311`\n"
+            f"   - Ethereum: `0x96fb9e62981040B7EC09813d15E8a624DBB51311`\n"
+            f"   - XRP (BNB Beacon): `bnb12awmj04d0csswhf5cyt66fzmwl4chfrrvhvhx2`\n\n"
+            "✅ After you send the payment, reply here with a screenshot so we can credit your account ASAP."
         )
-    }
+        bot.send_message(chat_id, deposit_msg, parse_mode="Markdown")
 
-    if message.text == "Crypto":
-        bot.send_message(message.chat.id, methods["Crypto"], parse_mode="Markdown")
-    else:
-        bot.send_message(message.chat.id, f"Send your deposit to:\n*{methods[message.text]}*", parse_mode="Markdown")
-
-@bot.message_handler(func=lambda msg: msg.text == "⬅️ Back")
-def go_back(message):
-    show_main_menu(message.chat.id)
-
+    except ValueError:
+        bot.send_message(chat_id, "⚠️ Please enter a valid number for the deposit amount (e.g., 50 or 100).")
 @bot.message_handler(func=lambda msg: msg.text == "🆘 Support")
 def support(message):
     bot.send_message(message.chat.id, "For help, message @GameOnHost or tag support here and we'll assist you ASAP.")
@@ -83,7 +83,14 @@ def how_to_deposit(message):
         parse_mode="Markdown"
     )
 
-# ✅ /create_group command with sportsbook username
+@bot.message_handler(func=lambda msg: msg.text == "🏦 Withdraw")
+def withdraw(message):
+    bot.send_message(message.chat.id,
+        "💸 To request a withdrawal, please reply here with the amount you’d like to cash out.\n"
+        "A member of our team will confirm and process your request.\n\n"
+        "*Withdrawals are processed every Tuesday.*",
+        parse_mode="Markdown"
+    )
 @bot.message_handler(commands=['create_group'])
 def create_group(message):
     if message.from_user.username != ADMIN_USERNAME.strip('@'):
@@ -126,9 +133,8 @@ def create_group(message):
     except Exception as e:
         bot.reply_to(message, f"⚠️ Failed to setup group: {str(e)}")
 
-# 🚀 Start polling
+# Start polling
 bot.infinity_polling()
-
 
 
 
