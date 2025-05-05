@@ -41,7 +41,7 @@ def show_inline_main_menu(chat_id):
         "🧿 *Welcome to GameOn*, where the odds work in your favor! 🏆\n\n"
         "🏆 What to expect:\n"
         "• 💵 Easy Deposits (CashApp, Venmo, Apple Pay, Crypto)\n"
-        "• 🏦 Fast Withdrawals — every Tuesday\n"
+        "• 🏦 Fast Withdrawals — every Tuesday after 10AM\n"
         "• 🎁 Exclusive Bonuses & Free Plays\n"
         "• 🧠 Real Humans, Real Help\n\n"
         "Your next win starts here. Choose an option below to begin!"
@@ -70,12 +70,13 @@ def handle_query(call):
         bot.send_message(chat_id, f"Hi {first_name}, how much would you like to deposit?", reply_markup=ForceReply())
 
     elif call.data == "withdraw":
-        if now.weekday() == 1 and now.hour < 10:  # Tuesday before 10 AM
+        # Only allow withdrawals on Tuesdays after 10:00 AM
+        if now.weekday() == 1 and now.hour >= 10:
             withdraw_context[chat_id] = True
             bot.send_message(chat_id, f"Hi {first_name}, how much would you like to withdraw?", reply_markup=ForceReply())
         else:
             bot.send_message(chat_id,
-                "📅 Withdrawals are processed every *Tuesday before 10:00 AM*. Please come back then to request your payout!",
+                "📅 Withdrawals are processed every *Tuesday after 10:00 AM*. Please come back then to request your payout!",
                 parse_mode="Markdown"
             )
 
