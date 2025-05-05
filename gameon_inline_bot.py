@@ -38,23 +38,16 @@ def show_inline_main_menu(chat_id):
         InlineKeyboardButton("🧾 How to Deposit", callback_data="how_to_deposit"),
         InlineKeyboardButton("☎️ Support", callback_data="support")
     )
-    welcome_message = (
-        "🧿 *Welcome to GameOn*, where the odds work in your favor! 🏆"
+welcome_message = (
+    "🧿 *Welcome to GameOn*, where the odds work in your favor! 🏆\n\n"
+    "🏆 What to expect:\n"
+    "• 💵 Easy Deposits (CashApp, Venmo, Apple Pay, Crypto)\n"
+    "• 🏦 Fast Withdrawals — every Tuesday\n"
+    "• 🎁 Exclusive Bonuses & Free Plays\n"
+    "• 🧠 Real Humans, Real Help\n\n"
+    "Your next win starts here. Choose an option below to begin!"
+)
 
-"
-        "🏆 What to expect:
-"
-        "• 💵 Easy Deposits (CashApp, Venmo, Apple Pay, Crypto)
-"
-        "• 🏦 Fast Withdrawals — every Tuesday
-"
-        "• 🎁 Exclusive Bonuses & Free Plays
-"
-        "• 🧠 Real Humans, Real Help
-
-"
-        "Your next win starts here. Choose an option below to begin!"
-    )
     bot.send_message(chat_id, welcome_message, reply_markup=markup)
 
 @bot.message_handler(commands=["start"])
