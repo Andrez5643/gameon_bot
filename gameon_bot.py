@@ -7,12 +7,20 @@ ADMIN_USERNAME = "@GameOnHost"
 
 bot = telebot.TeleBot(BOT_TOKEN, parse_mode="Markdown")
 
-# Show main menu
 def show_main_menu(chat_id):
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add(KeyboardButton("💸 Deposit"), KeyboardButton("🏦 Withdraw"))
-    markup.add(KeyboardButton("📊 Balance"), KeyboardButton("🧾 How to Deposit"))
-    markup.add(KeyboardButton("🆘 Support"))
+    markup.add(
+        KeyboardButton("💸 Deposit"),
+        KeyboardButton("🏦 Withdraw")
+    )
+    markup.add(
+        KeyboardButton("📊 Balance"),
+        KeyboardButton("🧾 How to Deposit")
+    )
+    markup.add(
+        KeyboardButton("🆘 Support")
+    )
+
     welcome_message = (
         "🧿 Welcome to *GameOn*, where the odds work in your favor! 🏆\n\n"
         "We're more than just a sportsbook — we're your personal line to big wins, fast payouts, and premium support. ✅\n\n"
@@ -24,7 +32,8 @@ def show_main_menu(chat_id):
         "Your next win starts here. If you ever need support, tap 🆘 or message @GameOnHost.\n\n"
         "💬 Hit \"💸 Deposit\" to get started!"
     )
-    bot.send_message(chat_id, welcome_message, reply_markup=markup)
+
+    bot.send_message(chat_id, welcome_message, reply_markup=markup, parse_mode="Markdown")
 
 @bot.message_handler(commands=["start"])
 def start(message):
@@ -65,30 +74,45 @@ def handle_deposit_amount(message):
 
     except ValueError:
         bot.send_message(chat_id, "⚠️ Please enter a valid number for the deposit amount (e.g., 50 or 100).")
-@bot.message_handler(func=lambda msg: msg.text == "🆘 Support")
-def support(message):
-    bot.send_message(message.chat.id, "For help, message @GameOnHost or tag support here and we'll assist you ASAP.")
-
-@bot.message_handler(func=lambda msg: msg.text == "📊 Balance")
-def balance(message):
-    bot.send_message(message.chat.id, "To check your balance, please message @GameOnHost or wait for it to be updated here.")
-
-@bot.message_handler(func=lambda msg: msg.text == "🧾 How to Deposit")
-def how_to_deposit(message):
-    bot.send_message(message.chat.id,
-        "1. Choose a deposit method.\n"
-        "2. Send funds to the provided handle/address.\n"
-        "3. Upload a screenshot for confirmation.\n"
-        "4. We'll credit your account ASAP. ✅",
-        parse_mode="Markdown"
-    )
+# Track users in the withdrawal flow
+withdraw_context = {}
+withdraw_payment_info = {}
 
 @bot.message_handler(func=lambda msg: msg.text == "🏦 Withdraw")
-def withdraw(message):
-    bot.send_message(message.chat.id,
-        "💸 To request a withdrawal, please reply here with the amount you’d like to cash out.\n"
-        "A member of our team will confirm and process your request.\n\n"
-        "*Withdrawals are processed every Tuesday.*",
+def start_withdraw(message):
+    first_name = message.from_user.first_name
+    chat_id = message.chat.id
+    withdraw_context[chat_id] = True
+    bot.send_message(chat_id, f"Hi {first_name}, how much would you like to withdraw?", reply_markup=ForceReply())
+
+@bot.message_handler(func=lambda message: withdraw_context.get(message.chat.id))
+def handle_withdraw_amount(message):
+    chat_id = message.chat.id
+    first_name = message.from_user.first_name
+
+    try:
+        amount = float(message.text.strip().replace("$", ""))
+        withdraw_context.pop(chat_id, None)
+        withdraw_payment_info[chat_id] = amount
+
+        bot.send_message(chat_id,
+            f"✅ Got it, {first_name}. You've requested to withdraw *${amount:.2f}*.\n\n"
+            "Please reply with your payout info (Cash App tag, Venmo username, Apple Pay number, etc.).",
+            parse_mode="Markdown"
+        )
+    except ValueError:
+        bot.send_message(chat_id, "⚠️ Please enter a valid number for the withdrawal amount.")
+
+@bot.message_handler(func=lambda message: withdraw_payment_info.get(message.chat.id) is not None)
+def handle_withdraw_payout_info(message):
+    chat_id = message.chat.id
+    first_name = message.from_user.first_name
+    amount = withdraw_payment_info.pop(chat_id, 0)
+    payout_info = message.text.strip()
+
+    bot.send_message(chat_id,
+        f"📝 Thanks {first_name}, we've received your request to withdraw *${amount:.2f}* to:\n`{payout_info}`\n\n"
+        "📌 Payouts are processed every *Tuesday*. We’ll notify you once it’s sent.",
         parse_mode="Markdown"
     )
 @bot.message_handler(commands=['create_group'])
@@ -133,8 +157,9 @@ def create_group(message):
     except Exception as e:
         bot.reply_to(message, f"⚠️ Failed to setup group: {str(e)}")
 
-# Start polling
+# 🚀 Start the bot
 bot.infinity_polling()
+
 
 
 
