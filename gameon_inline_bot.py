@@ -39,7 +39,7 @@ def show_inline_main_menu(chat_id):
         InlineKeyboardButton("☎️ Support", callback_data="support")
     )
     welcome_message = (
-        "🧿 *Welcome to GameOn*, where the odds work in your favor! 🏆
+        "🧿 *Welcome to GameOn*, where the odds work in your favor! 🏆"
 
 "
         "🏆 What to expect:
