@@ -7,7 +7,6 @@ from datetime import datetime
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 ADMIN_USERNAME = "@GameOnHost"
-SHEET_NAME = "Game On Player Ledger"
 
 bot = telebot.TeleBot(BOT_TOKEN, parse_mode="Markdown")
 
@@ -15,17 +14,19 @@ bot = telebot.TeleBot(BOT_TOKEN, parse_mode="Markdown")
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 creds = ServiceAccountCredentials.from_json_keyfile_name("/app/credentials.json", scope)
 client = gspread.authorize(creds)
+SHEET_NAME = "Game On Player Ledger"
 
+# Google Sheet logging
 def log_transaction_to_sheet(telegram_handle, first_name, sportsbook_username, password, action, amount, method, status):
     try:
         sheet = client.open(SHEET_NAME).sheet1
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         row = [timestamp, telegram_handle, first_name, sportsbook_username, password, action, amount, method, status]
         sheet.append_row(row)
-        print("✅ Logged to Google Sheet.")
     except Exception as e:
         print("❌ Failed to log to sheet:", e)
 
+# Main menu
 def show_inline_main_menu(chat_id):
     markup = InlineKeyboardMarkup(row_width=2)
     markup.add(
@@ -34,7 +35,8 @@ def show_inline_main_menu(chat_id):
         InlineKeyboardButton("🧾 How to Deposit", callback_data="how_to_deposit"),
         InlineKeyboardButton("☎️ Support", callback_data="support")
     )
-    welcome = (
+
+    welcome_message = (
         "🧿 *Welcome to GameOn*, where the odds work in your favor! 🏆\n\n"
         "🏆 What to expect:\n"
         "• 💵 Easy Deposits (CashApp, Venmo, Apple Pay, Crypto)\n"
@@ -43,98 +45,120 @@ def show_inline_main_menu(chat_id):
         "• 🧠 Real Humans, Real Help\n\n"
         "Your next win starts here. Choose an option below to begin!"
     )
-    bot.send_message(chat_id, welcome, reply_markup=markup)
-
-# ========== START + AFFILIATE ==========
-affiliate_referrals = {}
+    bot.send_message(chat_id, welcome_message, reply_markup=markup)
 
 @bot.message_handler(commands=["start"])
-def handle_start(message):
-    chat_id = message.chat.id
-    text = message.text.strip()
-    first_name = message.from_user.first_name
-    username = message.from_user.username or "N/A"
+def start(message):
+    show_inline_main_menu(message.chat.id)
 
-    parts = text.split()
-    if len(parts) == 2 and parts[1].startswith("af_"):
-        affiliate_id = parts[1][3:]
-        affiliate_referrals[chat_id] = affiliate_id
+# States
+deposit_context = {}
+withdraw_context = {}
+withdraw_payment_info = {}
+
+# Handle main buttons
+@bot.callback_query_handler(func=lambda call: True)
+def handle_query(call):
+    chat_id = call.message.chat.id
+    first_name = call.from_user.first_name
+    now = datetime.now()
+
+    if call.data == "deposit":
+        deposit_context[chat_id] = True
+        bot.send_message(chat_id, f"Hi {first_name}, how much would you like to deposit?", reply_markup=ForceReply())
+
+    elif call.data == "withdraw":
+        if now.weekday() == 1 and now.hour >= 10:
+            withdraw_context[chat_id] = True
+            bot.send_message(chat_id, f"Hi {first_name}, how much would you like to withdraw?", reply_markup=ForceReply())
+        else:
+            bot.send_message(chat_id,
+                "📅 Withdrawals are *only accepted on Tuesdays after 10:00 AM*. Please do not request a payout before then.",
+                parse_mode="Markdown"
+            )
+
+    elif call.data == "how_to_deposit":
         bot.send_message(chat_id,
-            f"👋 Welcome {first_name}!\n\nYou were referred by: *{affiliate_id}*\n\n"
-            "Let's get you started with Game On Sportsbook.",
+            "1. Choose a deposit method\n"
+            "2. Send funds to the provided address\n"
+            "3. Upload a screenshot here\n"
+            "4. We’ll credit your account ASAP ✅",
             parse_mode="Markdown"
         )
-        log_transaction_to_sheet(f"@{username}", first_name, "N/A", "N/A", "Referral", "N/A", f"Affiliate: {affiliate_id}", "New Lead")
-    else:
-        show_inline_main_menu(chat_id)
 
-# ========== DEPOSIT FLOW ==========
-deposit_context = {}
+    elif call.data == "support":
+        bot.send_message(chat_id, "☎️ For help, message @GameOnHost or tag support here and we'll assist you ASAP.")
 
-@bot.callback_query_handler(func=lambda call: call.data == "deposit")
-def ask_deposit_amount(call):
-    chat_id = call.message.chat.id
-    deposit_context[chat_id] = True
-    bot.send_message(chat_id, "How much would you like to deposit?", reply_markup=ForceReply())
+    elif call.data in ["cashapp", "venmo", "applepay", "crypto"]:
+        msg = ""
+        if call.data == "cashapp":
+            msg = (
+                "💸 *Send your deposit to:* `$myposhsolutions`\n\n"
+                "📋 If Cash App asks for a note, send just this emoji: 💼\n"
+                "⚠️ DO NOT write any words in the note.\n"
+                "📷 Upload a screenshot showing the $cashtag after payment.\n\n"
+                "*Address expires in 30 minutes.*"
+            )
+        elif call.data == "venmo":
+            msg = (
+                "📲 *Send to:* `@drellanno`\n\n"
+                "📋 Leave the note blank, or use this emoji: 💼\n"
+                "📷 Upload a screenshot once sent to confirm.\n\n"
+                "*Address expires in 30 minutes.*"
+            )
+        elif call.data == "applepay":
+            msg = (
+                "📱 *Send via Apple Pay to:* `346-475-8302`\n\n"
+                "📋 No notes. Screenshot after sending.\n\n"
+                "*Address expires in 30 minutes.*"
+            )
+        elif call.data == "crypto":
+            msg = (
+                "💱 *Crypto Deposit Addresses:*\n"
+                "• Dogecoin: `D8FiDJhqr2LcxHtqroywc1Y5yrF6tMom98`\n"
+                "• Solana: `2FnSCWLh5fVB4Fpjbi7TuaTPu9HtNZexiTu5SbDm6XTA`\n"
+                "• USDT (AVAX): `0x96fb9e62981040B7EC09813d15E8a624DBB51311`\n"
+                "• Ethereum: `0x96fb9e62981040B7EC09813d15E8a624DBB51311`\n"
+                "• XRP (BNB Beacon): `bnb12awmj04d0csswhf5cyt66fzmwl4chfrrvhvhx2`\n\n"
+                "📷 Upload a screenshot after sending.\n\n"
+                "*Addresses change periodically.*"
+            )
+        bot.send_message(chat_id, msg, parse_mode="Markdown")
 
-@bot.message_handler(func=lambda msg: deposit_context.get(msg.chat.id))
-def ask_payment_method(message):
+# Deposit amount → method buttons
+@bot.message_handler(func=lambda message: deposit_context.get(message.chat.id))
+def handle_deposit_amount(message):
     chat_id = message.chat.id
     first_name = message.from_user.first_name
     try:
         amount = float(message.text.strip().replace("$", ""))
         deposit_context.pop(chat_id, None)
+
         markup = InlineKeyboardMarkup(row_width=2)
         markup.add(
             InlineKeyboardButton("💸 Cash App", callback_data="cashapp"),
             InlineKeyboardButton("📲 Venmo", callback_data="venmo"),
             InlineKeyboardButton("📱 Apple Pay", callback_data="applepay"),
-            InlineKeyboardButton("🪙 Crypto", callback_data="crypto")
+            InlineKeyboardButton("💱 Crypto", callback_data="crypto")
         )
-        bot.send_message(chat_id, f"Thanks {first_name}! Choose a payment method below:", reply_markup=markup)
+
+        bot.send_message(chat_id, f"Thanks {first_name}! Now choose a payment method:", reply_markup=markup)
+
+        log_transaction_to_sheet(
+            telegram_handle=f"@{message.from_user.username or 'N/A'}",
+            first_name=first_name,
+            sportsbook_username="N/A",
+            password="N/A",
+            action="Deposit",
+            amount=amount,
+            method="User Selected",
+            status="Pending"
+        )
     except ValueError:
-        bot.send_message(chat_id, "⚠️ Please enter a valid number (e.g., 50 or 100).")
+        bot.send_message(chat_id, "⚠️ Please enter a valid number for the deposit amount (e.g., 50 or 100).")
 
-@bot.callback_query_handler(func=lambda call: call.data in ["cashapp", "venmo", "applepay", "crypto"])
-def show_payment_details(call):
-    msg = ""
-    if call.data == "cashapp":
-        msg = "💸 Send to: `$myposhsolutions`\n✅ Leave the note blank. Send a screenshot after."
-    elif call.data == "venmo":
-        msg = "📲 Send to: `@drellanno`\n✅ Blank note or ✅ only. Screenshot required."
-    elif call.data == "applepay":
-        msg = "📱 Send via Apple Pay: `346-475-8302`\n✅ No notes. Screenshot after sending."
-    elif call.data == "crypto":
-        msg = (
-            "🪙 *Crypto Options:*\n"
-            "- Dogecoin: `D8FiDJhqr2LcxHtqroywc1Y5yrF6tMom98`\n"
-            "- Solana: `2FnSCWLh5fVB4Fpjbi7TuaTPu9HtNZexiTu5SbDm6XTA`\n"
-            "- USDT (AVAX): `0x96fb9e62981040B7EC09813d15E8a624DBB51311`\n"
-            "- Ethereum: `0x96fb9e62981040B7EC09813d15E8a624DBB51311`\n"
-            "- XRP (BNB Beacon): `bnb12awmj04d0csswhf5cyt66fzmwl4chfrrvhvhx2`\n\n"
-            "✅ Reply with a screenshot after payment."
-        )
-    bot.send_message(call.message.chat.id, msg, parse_mode="Markdown")
-
-# ========== WITHDRAWAL ==========
-withdraw_context = {}
-withdraw_payment_info = {}
-
-@bot.callback_query_handler(func=lambda call: call.data == "withdraw")
-def handle_withdraw_start(call):
-    chat_id = call.message.chat.id
-    first_name = call.from_user.first_name
-    now = datetime.now()
-    if now.weekday() == 1 and now.hour >= 10:
-        withdraw_context[chat_id] = True
-        bot.send_message(chat_id, f"Hi {first_name}, how much would you like to withdraw?", reply_markup=ForceReply())
-    else:
-        bot.send_message(chat_id,
-            "📅 Withdrawals are *only accepted on Tuesdays after 10:00 AM*. Please come back then.",
-            parse_mode="Markdown"
-        )
-
-@bot.message_handler(func=lambda msg: withdraw_context.get(msg.chat.id))
+# Handle withdrawal amount
+@bot.message_handler(func=lambda message: withdraw_context.get(message.chat.id))
 def handle_withdraw_amount(message):
     chat_id = message.chat.id
     first_name = message.from_user.first_name
@@ -142,70 +166,77 @@ def handle_withdraw_amount(message):
         amount = float(message.text.strip().replace("$", ""))
         withdraw_context.pop(chat_id, None)
         withdraw_payment_info[chat_id] = amount
+
         bot.send_message(chat_id,
-            f"✅ Got it, {first_name}. You've requested *${amount:.2f}*.\nReply with your payout info (Cash App, Venmo, etc.):",
+            f"✅ Got it, {first_name}. You've requested to withdraw *${amount:.2f}*.\n\n"
+            "Please reply with your payout info (Cash App tag, Venmo username, Apple Pay number, etc.).",
             parse_mode="Markdown"
         )
     except ValueError:
-        bot.send_message(chat_id, "⚠️ Invalid amount. Please try again.")
+        bot.send_message(chat_id, "⚠️ Please enter a valid withdrawal amount (e.g., 100).")
 
+# Payout info
 @bot.message_handler(func=lambda msg: withdraw_payment_info.get(msg.chat.id) is not None)
-def handle_withdraw_payout_info(message):
+def handle_withdraw_info(message):
     chat_id = message.chat.id
     first_name = message.from_user.first_name
     amount = withdraw_payment_info.pop(chat_id, 0)
-    payout_info = message.text.strip()
+    payout = message.text.strip()
+
     bot.send_message(chat_id,
-        f"📝 Request to withdraw *${amount:.2f}* to:\n`{payout_info}`\n\n📌 Payouts sent every *Tuesday*.",
-        parse_mode="Markdown"
-    )
-    log_transaction_to_sheet(f"@{message.from_user.username or 'N/A'}", first_name, "N/A", "N/A", "Withdrawal", amount, payout_info, "Pending")
-
-# ========== SUPPORT & HELP ==========
-@bot.callback_query_handler(func=lambda call: call.data == "how_to_deposit")
-def how_to_deposit(call):
-    bot.send_message(call.message.chat.id,
-        "1. Choose a deposit method\n2. Send payment\n3. Upload screenshot here\n4. We’ll credit ASAP ✅",
+        f"📝 Thanks {first_name}, we’ve received your request to withdraw *${amount:.2f}* to:\n`{payout}`\n\n"
+        "📌 All payouts are processed every *Tuesday after 10AM*.",
         parse_mode="Markdown"
     )
 
-@bot.callback_query_handler(func=lambda call: call.data == "support")
-def support(call):
-    bot.send_message(call.message.chat.id, "☎️ For help, message @GameOnHost or tag support here.")
+    log_transaction_to_sheet(
+        telegram_handle=f"@{message.from_user.username or 'N/A'}",
+        first_name=first_name,
+        sportsbook_username="N/A",
+        password="N/A",
+        action="Withdrawal",
+        amount=amount,
+        method=payout,
+        status="Pending"
+    )
 
-# ========== ADMIN GROUP CREATION ==========
+# Admin: /create_group
 @bot.message_handler(commands=["create_group"])
 def create_group(message):
     if message.from_user.username != ADMIN_USERNAME.strip("@"):
-        bot.reply_to(message, "❌ You are not authorized.")
-        return
-    try:
-        parts = message.text.strip().split()
-        if len(parts) != 2 or not message.reply_to_message:
-            bot.reply_to(message, "⚠️ Usage: /create_group [SportsbookUsername] (as a reply to the player)")
-            return
+        return bot.reply_to(message, "❌ You’re not authorized.")
 
-        sportsbook_username = parts[1]
-        user = message.reply_to_message.from_user
-        telegram_handle = f"@{user.username or 'N/A'}"
-        first_name = user.first_name
-        group_title = f"Game On | {sportsbook_username}"
+    parts = message.text.strip().split()
+    if len(parts) != 2 or not message.reply_to_message:
+        return bot.reply_to(message, "⚠️ Usage: /create_group [Username] (must reply to user)")
 
-        log_transaction_to_sheet(telegram_handle, first_name, sportsbook_username, "Assigned by VA", "Account Created", "N/A", "N/A", "Created")
+    user = message.reply_to_message.from_user
+    sportsbook_username = parts[1]
+    group_title = f"Game On | {sportsbook_username}"
 
-        template = (
-            f"✅ Group setup for: *{group_title}*\n\n"
-            f"📌 Group Name: *{group_title}*\n"
-            "Add: Player, @GameOnSupport, Bot\n\n"
-            "🏆 Welcome to your private Game On room!\n"
-            "💸 Deposit with the bot\n"
-            "🧾 How to Deposit anytime\n"
-            "🆘 Get help\n\n"
-            "📌 Let us know when you're ready to deposit!"
-        )
-        bot.reply_to(message, template, parse_mode="Markdown")
-    except Exception as e:
-        bot.reply_to(message, f"⚠️ Group setup failed: {e}")
+    log_transaction_to_sheet(
+        telegram_handle=f"@{user.username or 'N/A'}",
+        first_name=user.first_name,
+        sportsbook_username=sportsbook_username,
+        password="Assigned by VA",
+        action="Account Created",
+        amount="N/A",
+        method="N/A",
+        status="Created"
+    )
 
-# ========== START POLLING ==========
+    msg = (
+        f"✅ Group setup for *{group_title}*\n\n"
+        f"📌 Group Name: *{group_title}*\n"
+        f"Add Members: Player, @GameOnSupport, Bot\n\n"
+        "📌 Pinned Message:\n"
+        "🏆 Welcome to your private Game On betting room!\n"
+        "💸 Use the bot to deposit\n"
+        "📆 Withdraw on Tuesdays\n"
+        "🆘 Contact support anytime\n\n"
+        "📍 Let us know when you’re ready to play!"
+    )
+    bot.reply_to(message, msg, parse_mode="Markdown")
+
+# Run bot
 bot.infinity_polling()
