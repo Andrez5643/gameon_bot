@@ -6,7 +6,8 @@ from handlers.bonus import handle_bonus
 from handlers.support import register_support_handler
 from commands.create_group import register_group_command
 from utils.menu import show_main_menu
-from handlers.deposit import register_deposit_handlers, register_how_to_deposit_handler
+from handlers.deposit import register_deposit_handlers, register_how_to_deposit_handler(bot)
+
 
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
