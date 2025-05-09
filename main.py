@@ -1,20 +1,18 @@
 import os
 import telebot
-from handlers.deposit import register_deposit_handlers
+from handlers.deposit import register_deposit_handlers, register_how_to_deposit_handler
 from handlers.withdraw import register_withdraw_handlers
 from handlers.bonus import handle_bonus
 from handlers.support import register_support_handler
 from commands.create_group import register_group_command
 from utils.menu import show_main_menu
-from handlers.deposit import register_deposit_handlers, register_how_to_deposit_handler(bot)
-
-
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 bot = telebot.TeleBot(BOT_TOKEN, parse_mode="Markdown")
 
 # Register all handlers
 register_deposit_handlers(bot)
+register_how_to_deposit_handler(bot)
 register_withdraw_handlers(bot)
 handle_bonus(bot)
 register_support_handler(bot)
