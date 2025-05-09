@@ -5,7 +5,8 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from handlers.deposit import register_deposit_handlers
 from handlers.withdraw import register_withdraw_handlers
 from handlers.support import register_support_handler
-from handlers.bonus import handle_bonus_claim
+from handlers.bonus import handle_bonus
+
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 bot = telebot.TeleBot(BOT_TOKEN, parse_mode="Markdown")
@@ -37,6 +38,8 @@ def show_main_menu(chat_id):
 register_deposit_handlers(bot)
 register_withdraw_handlers(bot)
 register_support_handler(bot)
+handle_bonus(bot)
+
 
 # 🎁 Register bonus claim handler
 bot.register_callback_query_handler(handle_bonus_claim, lambda call: call.data == "claim_bonus")
