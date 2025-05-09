@@ -14,13 +14,14 @@ def register_bonus_handlers(bot):
             return
 
         bonus_percent = get_bonus_percent()
-        claim_text = (
-            f"🎁 *Free Bonus Available!*\n"
-            f"Tap below to instantly claim your bonus — no deposit needed.\n"
-            f"🟡 _Limited time offer_\n\n"
-            f"🔢 *Current Bonus:* {bonus_percent:.0f}%\n"
-            f"👇"
-        )
+       claim_text = (
+    f"🎁 *Free Bonus Available!*\n"
+    f"To claim your bonus, your account must be active with a minimum $100 deposit.\n"
+    f"🟡 _Limited time offer_\n\n"
+    f"🔢 *Current Bonus:* {bonus_percent:.0f}%\n"
+    f"👇"
+)
+
         markup = InlineKeyboardMarkup()
         markup.add(InlineKeyboardButton("🎯 Claim Bonus 🟢", callback_data="claim_bonus"))
         bot.send_message(call.message.chat.id, claim_text, reply_markup=markup, parse_mode="Markdown")
