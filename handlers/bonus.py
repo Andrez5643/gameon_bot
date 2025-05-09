@@ -85,4 +85,6 @@ def register_deposit_handlers(bot):
             method="User Selected",
             status="Pending"
         )
+def handle_bonus(bot):
+    register_bonus_handlers(bot)
 
