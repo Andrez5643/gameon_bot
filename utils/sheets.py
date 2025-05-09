@@ -18,11 +18,11 @@ def log_transaction_to_sheet(telegram_handle, first_name, sportsbook_username, p
     except Exception as e:
         print("❌ Failed to log to sheet:", e)
 
-def log_bonus_to_sheet(user_id, username, first_name, deposit_amount, bonus_amount):
+def log_bonus_claim(user_id, username, first_name):
     try:
         sheet = client.open(SHEET_NAME).worksheet("Bonuses")
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        row = [timestamp, str(user_id), f"@{username}", first_name, deposit_amount, bonus_amount]
+        row = [timestamp, str(user_id), f"@{username}", first_name]
         sheet.append_row(row)
     except Exception as e:
         print("❌ Failed to log bonus:", e)
