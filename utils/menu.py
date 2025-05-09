@@ -7,6 +7,5 @@ def show_main_menu(bot, chat_id):
         InlineKeyboardButton("🏦 Withdraw", callback_data="withdraw"),
         InlineKeyboardButton("🧾 How to Deposit", callback_data="how_to_deposit"),
         InlineKeyboardButton("🏛️ Support", callback_data="support"),
-        InlineKeyboardButton("🎁 Claim Bonus", callback_data="bonus")
     )
     bot.send_message(chat_id, "📲 *Main Menu* — Please choose an option below:", reply_markup=markup, parse_mode="Markdown")
