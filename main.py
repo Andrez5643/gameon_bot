@@ -1,7 +1,7 @@
 import os
 import telebot
 from handlers.deposit import register_deposit_handlers, register_how_to_deposit_handler
-from handlers.withdra import register_withdraw_handlers
+from handlers.withdraw impot register_withdraw_handlers
 from handlers.bonus import handle_bonus
 from handlers.support import register_support_handler
 from commands.create_group import register_group_command
